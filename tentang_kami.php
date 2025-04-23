@@ -6,235 +6,300 @@ require 'auth.php';
 <head>  
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Villa Panjalu</title>  
+    <title>Villa Panjalu - Tentang Kami</title>  
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/navbar.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <style>  
-        /* Reset dan font global */  
-        body {  
-            font-family: Arial, sans-serif;  
-            line-height: 1.6;  
-            margin: 0;  
-            padding: 0;  
-            background-color: #ffffff;  
-        }  
-
-        /* Gaya Navbar */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* Hero section */
+        .hero {
+            background-color: #EBE3D5;
+            padding: 120px 0 80px;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            color: #554C42;
+            margin-bottom: 30px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .hero h1::after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 3px;
             background-color: #B0A695;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
         }
-        .logo img {
-            max-width: 70px;
+
+        /* About section */
+        .about-section {
+            padding: 80px 0;
+            background-color: #fff;
+        }
+
+        .about-container {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .about-image {
+            flex: 1;
+            min-width: 300px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .about-image img {
+            width: 100%;
             height: auto;
-            padding-left: 30px;
+            display: block;
+            transition: transform 0.5s ease;
         }
-        .menu {
-            list-style: none;
-            display: flex;
-            margin: 0;
-            padding: 0;
-        }
-        .menu li {
-            margin: 0 15px;
-        }
-        .menu a {
-            text-decoration: none;
-            color: #ffffff;
-            font-weight: 20px;
-        }
-        .menu a:hover {
-            color: #6b5b4a;
-            text-decoration: underline;
-        }
-        .menu-toggle {
-            display: none;
-            font-size: 24px;
-            background: none;
-            border: none;
-            cursor: pointer;
+        
+        .about-image img:hover {
+            transform: scale(1.05);
         }
 
-        @media (max-width: 768px) {
-            .menu {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 60px;
-                right: 0;
-                background-color: #B0A695;
-                width: 100%;
-                padding: 10px 0;
-            }
-            .menu li {
-                margin: 10px 0;
-            }
-            .menu-toggle {
-                display: block;
-            }
-            .navbar {
-                position: relative;
-            }
+        .about-content {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .about-content h2 {
+            font-size: 32px;
+            color: #554C42;
+            margin-bottom: 20px;
+        }
+        
+        .about-content p {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #666;
+            margin-bottom: 30px;
         }
 
-        .menu.show {
-            display: flex;
+        /* Location section */
+        .location-section {
+            padding: 80px 0;
+            background-color: #f9f9f9;
         }
-
-        /* Header */
-        /* Styling Umum */
-        .header {
-            padding: 20px;
-            background-color: #ffffff;
-            font-family: Arial, sans-serif;
-        }
-
-        /* Styling untuk teks H1 */
-        .text-section h1 {
+        
+        .location-title {
             text-align: center;
             font-size: 36px;
-            color: #333;
-            margin-bottom: 20px;
+            color: #554C42;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .location-title::after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 3px;
+            background-color: #B0A695;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
-        /* Styling untuk gambar dan teks H2 */
-        .image-and-description {
-            display: flex; /* Membuat elemen di dalamnya berbaris horizontal */
-            align-items: center; /* Gambar dan teks sejajar secara vertikal */
-            justify-content: center; /* Pusatkan secara horizontal */
-            gap: 30px; /* Memberikan jarak antar elemen */
-            max-width: 1200px; /* Batasi lebar keseluruhan */
-            margin: 0 auto; /* Pusatkan kontainer */
+        .map-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .map-container iframe {
+            width: 100%;
+            height: 450px;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        /* Styling untuk gambar */
-        .header-image {
-            max-width: 30%; /* Ukuran gambar */
-            height: auto;
-            margin: 20px 100px 20px auto;
-            border-radius: 8px; /* Tambahkan sudut tumpul */
+        /* Contact section */
+        .contact-section {
+            padding: 80px 0;
+            background-color: #EBE3D5;
+            text-align: center;
         }
-
-        /* Styling untuk teks H2 */
-        .penjelasan h2 {
+        
+        .contact-title {
+            font-size: 36px;
+            color: #554C42;
+            margin-bottom: 15px;
+        }
+        
+        .contact-info {
+            font-size: 20px;
+            color: #776B5D;
+            margin-bottom: 10px;
+        }
+        
+        .contact-email {
             font-size: 18px;
-            line-height: 1.6;
-            color: #555;
-            margin: 0;
+            color: #776B5D;
+            margin-bottom: 30px;
         }
-
-        /* Responsif untuk layar kecil */
-        @media (max-width: 768px) {
-            .image-and-description {
-                flex-direction: column; /* Ubah ke tata letak vertikal untuk layar kecil */
-                text-align: center;
-            }
-
-            .header-image {
-                max-width: 100%; /* Ukuran gambar */
-                height: auto;
-                border-radius: 8px; /* Tambahkan sudut tumpul */
-            }
-
-            .penjelasan h2 {
-                padding: 10px;
-            }
-        }
-
-        .maps{
-            margin-bottom: 20px;
+        
+        .contact-buttons {
             display: flex;
             justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .contact-btn {
+            display: flex;
             align-items: center;
-            margin: 0;
-            background-color: #ffffff; /* Warna background (opsional) */
+            gap: 10px;
+            padding: 12px 25px;
+            background-color: #776B5D;
+            color: white;
+            border-radius: 30px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-btn:hover {
+            transform: translateY(-5px);
+            background-color: #554C42;
+        }
+        
+        .contact-btn img {
+            width: 24px;
+            height: 24px;
         }
 
-        .narahubung {
-            text-align: center; 
-            padding: 10px;  
-            background-color: #ffffff;  
-            margin: 0;
-            color: #554C42;
+        /* Email icon fallback */
+        .email-icon {
+            width: 24px;
+            height: 24px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            display: inline-block;
         }
 
-        /* Footer */
-        .footer {  
-            text-align: center;  
-            padding: 20px;  
-            background-color: #8d7b4f;  
-            color: white;  
-        } 
+        /* Media queries */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 80px 0 60px;
+            }
+            
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            .about-container {
+                flex-direction: column;
+            }
+            
+            .location-title {
+                font-size: 28px;
+            }
+            
+            .map-container iframe {
+                height: 350px;
+            }
+            
+            .contact-title {
+                font-size: 28px;
+            }
+            
+            .contact-info, .contact-email {
+                font-size: 16px;
+            }
+        }
     </style>
-    <script>  
-        document.addEventListener('DOMContentLoaded', function() {  
-            const menuToggle = document.querySelector('.menu-toggle');  
-            const menu = document.querySelector('.menu');  
-
-            menuToggle.addEventListener('click', function() {  
-                menu.classList.toggle('show');  
-            });  
-        });  
-    </script> 
 </head>
 <body>  
-    <nav class="navbar">  
-        <div class="logo">  
-            <img src="logo/kelompok.jpg" alt="Logo">  
-        </div>  
-        <button class="menu-toggle" aria-label="Toggle menu">☰</button>  
-        <ul class="menu">  
-            <li><a href="home.php">Beranda</a></li>  
-            <li><a href="villa_kami.php">Villa Kami</a></li>  
-            <li><a href="calender.php">Cek Tanggal</a></li>  
-            <li><a href="tentang_kami.php">Tentang Kami</a></li>  
-            <li><a href="logout.php">Logout</a></li>  
-        </ul>  
-    </nav>  
-    <div class="header">
-        <!-- Teks Selamat Datang -->
-        <div class="text-section">
-            <h1>TENTANG KAMI</h1>
-        </div>
+<?php include 'navbar.php'; ?>
 
-        <!-- Gambar dan Penjelasan -->
-        <div class="image-and-description">
-            <img src="kayu_hujung/IMG_46111.jpg" alt="Pemandangan Villa" class="header-image" data-aos="fade-right">
-            <div class="penjelasan" data-aos="fade-left">
-                <h2>
-                    Kami menyediakan beberapa Private Villa yang dapat Anda sewa harian. Lengkap dengan informasi foto, harga, lokasi dan juga fasilitas yang tersedia. Anda juga dapat melakukan reservasi online melalui website kami “Villa Situ Lengkong”.
-                </h2>
-            </div>
+<section class="hero">
+    <div class="container">
+        <h1 data-aos="fade-up">TENTANG KAMI</h1>
+    </div>
+</section>
+
+<section class="about-section">
+    <div class="about-container">
+        <div class="about-image" data-aos="fade-right">
+            <img src="kayu_hujung/IMG_46111.jpg" alt="Pemandangan Villa">
+        </div>
+        <div class="about-content" data-aos="fade-left">
+            <h2>Villa Situ Lengkong Panjalu</h2>
+            <p>
+                Kami menyediakan beberapa Private Villa yang dapat Anda sewa harian. Lengkap dengan informasi foto, harga, lokasi dan juga fasilitas yang tersedia.
+            </p>
+            <p>
+                Villa Situ Lengkong menawarkan pengalaman menginap yang tak terlupakan dengan pemandangan indah Danau Situ Lengkong. Setiap villa kami dilengkapi dengan fasilitas modern dan nyaman, cocok untuk liburan keluarga, gathering dengan teman, atau acara spesial lainnya.
+            </p>
+            <p>
+                Anda juga dapat melakukan reservasi online melalui website kami "Villa Situ Lengkong" dengan mudah dan cepat.
+            </p>
+            <a href="villa_kami.php" class="btn">Lihat Villa Kami</a>
         </div>
     </div>
+</section>
 
-    <div class="maps">
-        <p>LOKASI</p>
-
+<section class="location-section">
+    <div class="container">
+        <h2 class="location-title" data-aos="fade-up">LOKASI KAMI</h2>
+        <div class="map-container" data-aos="zoom-in">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d489.7354575173409!2d108.2679508238487!3d-7.131894150463401!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6f471dd336c941%3A0x43f70d6ebc4a936c!2sSITU%20LENGKONG%20PANJALU!5e0!3m2!1sen!2sid!4v1732207028254!5m2!1sen!2sid" 
+                allowfullscreen="" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
     </div>
-<!-- Google Maps Embed -->
-<div class="maps">
-    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d489.7354575173409!2d108.2679508238487!3d-7.131894150463401!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6f471dd336c941%3A0x43f70d6ebc4a936c!2sSITU%20LENGKONG%20PANJALU!5e0!3m2!1sen!2sid!4v1732207028254!5m2!1sen!2sid" 
-        width="600" 
-        height="450" 
-        style="border:0;" 
-        allowfullscreen="" 
-        loading="lazy" 
-        referrerpolicy="no-referrer-when-downgrade"></iframe>
-</div>
-<div class="narahubung">
-    <h2>Hubungi Kami</h2>
-    <h3>0895-0689-2023 / 0821-30133-0892</h3>
-    <h3>villasitulengkong@gmail.com</h3>
-</div>
+</section>
 
-    <footer class="footer">  
-        <p>&copy; 2024. All Rights Reserved Villa Panjalu</p>  
-    </footer>  
-</body>
+<section class="contact-section">
+    <div class="container" data-aos="fade-up">
+        <h2 class="contact-title">Hubungi Kami</h2>
+        <p class="contact-info">0895-0689-2023 / 0821-3013-0892</p>
+        <p class="contact-email">villasitulengkong@gmail.com</p>
+        
+        <div class="contact-buttons">
+            <a href="https://wa.me/6289506892023" target="_blank" class="contact-btn">
+                <img src="logo/whatsapp1.png" alt="WhatsApp">
+                WhatsApp
+            </a>
+            <a href="mailto:villasitulengkong@gmail.com" class="contact-btn">
+                <span class="email-icon"></span>
+                Email
+            </a>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        <p>&copy; 2024. All Rights Reserved Villa Situ Lengkong Panjalu</p>
+    </div>
+</footer>  
+
+<script src="js/navbar.js"></script>
 <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-  <script>
-    AOS.init();
-  </script>
+<script>
+    AOS.init({
+        duration: 800,
+        easing: 'ease',
+        once: true
+    });
+</script>
+</body>
 </html>

@@ -7,342 +7,236 @@ require 'auth.php';
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
     <title>Villa Panjalu</title> 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const toggleButton = document.querySelector('.menu-toggle');
-            const menu = document.querySelector('.menu');
-            
-            toggleButton.addEventListener('click', function() {
-                menu.classList.toggle('show');
-            });
-        });
-    </script> 
-
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/navbar.css">
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <style>
-                /* Reset dan font global */
-            body {  
-            font-family: Arial, sans-serif;  
-            line-height: 1.6;  
-            margin: 0;  
-            padding: 0;  
-            background-color: #f7f7f7; 
-            size: 100%; 
-        } 
-
-        /* Gaya Navbar */
-        .navbar {  
-            display: flex;  
-                justify-content: space-between;  
-                align-items: center;  
-                background-color: #B0A695;  
- 
-            }  
-
-            .logo img {  
-                max-width: 70px;  
-                height: auto;  
-                padding-left: 30px;
-            } 
-
-            .menu {  
-                list-style: none;  
-                display: flex;  
-                margin: 0;  
-                padding: 0;  
-            }  
-
-            .menu li {  
-                margin: 0 15px;
-            }  
-
-
-            .menu a {  
-                text-decoration: none;  
-                color: #ffffff;  
-                font-weight: 20px;  
-            }  
-
-            .menu a:hover {  
-            color: #6b5b4a;  
-            text-decoration: underline;  
-            } 
-
-            .menu-toggle {
-                display: none; /* Hide toggle button by default */
-                font-size: 24px;
-                background: none;
-                border: none;
-                cursor: pointer;
-            }
-
-            @media (max-width: 768px) {
-                .menu {
-                    display: none; /* Hide menu by default on small screens */
-                    flex-direction: column;
-                    position: absolute;
-                    top: 60px;
-                    right: 0;
-                    background-color: #B0A695;
-                    width: 100%;
-                    padding: 10px 0;
-                }
-
-                .menu li {
-                    margin: 10px 0;
-                }
-
-                .menu-toggle {
-                    display: block; /* Show toggle button on small screens */
-                }
-
-                .navbar {
-                    position: relative;
-                }
-            }
-
-            /* Show menu when toggle button is clicked */
-            .menu.show {
-                display: flex;
-            } 
-
         .header {  
             background-color: #ffffff;  
-            padding-top: 20px;
-            padding-bottom: 20px;
+            padding: 80px 0 60px;
         }  
-
-        @media(max-widht:768px) {
-            .header {
-                padding-top: 0px;
-                padding-bottom: 0px;
-            }
-        }
 
         .header-content {  
             display: flex;  
             align-items: center;  
-            justify-content: center; /* Center align */  
-            max-width: 1200px; /* Max width of content */  
-            margin: 0 auto;
+            gap: 40px;
             flex-wrap: wrap;
-            padding:0 20px; /* Center align the content in the container */  
         }  
 
         .text-section {  
-            flex: 1; /* Take up remaining space */  
-            padding: 20px;
-            text-align: left; /* Space around text */  
+            flex: 1;
+            min-width: 300px;
         }  
 
         .text-section h1 {
-            font-size: 36px;
-            
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: #554C42;
         }  
-        .text-section h2  {  
-            margin: 0; /* Remove default margin */ 
-        }  
-
-        .text-color{
-            color: #4a4a4a;
+        
+        .text-section h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #776B5D;
+        }
+        
+        .text-section p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #666;
         }
 
         .header-image {  
-            flex: 1; /* Take up half space */  
-            max-width: 35%; /* Responsive image */  
-            height: auto; /* Maintain aspect ratio */  
-            border-radius: 5px; /* Optional: add rounded corners */  
+            flex: 1;
+            min-width: 300px;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.5s ease;
         }
 
-        @media (max-width: 768px) {  
-            .header-content {  
-                flex-direction: column; /* Stack on smaller screens */  
-                align-items: center; /* Center align */  
-            }  
-
-            .text-section,  
-            .header-image {  
-                flex: none; /* Reset flex for stacking */  
-                max-width: 100%; /* Full width on small screens */  
-            }  
-
-            .header-image {  
-                margin-top: 20px; 
-                margin-left: 10px;
-                margin-right: 10px;/* Space above image */  
-            }  
-        }  
+        .header-image:hover {
+            transform: scale(1.03);
+        }
 
         .villa-details {  
             text-align: center;  
-            padding: 30px 0;  
+            padding: 80px 0;  
             background-color: #EBE3D5;
         }  
 
         .villas {  
             display: flex;  
             justify-content: center;  
-            margin: 20px 0;  
-            gap: 20px;  
+            flex-wrap: wrap;
+            gap: 30px;
+            margin: 50px 0;
         }  
 
         .villa {  
-            max-width: 300px;  
-            text-align: center;  
+            max-width: 350px;
+            transition: transform 0.3s ease;
         }  
 
         .villa img {  
             width: 100%;  
-            height: auto;  
-            border-radius: 10px;  
-            transition: transform 0.3s ease; /* Tambahkan transisi */  
+            height: 250px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
         }  
 
         .villa img:hover {  
-            transform: scale(1.05); /* Efek memperbesar saat hover */  
+            transform: scale(1.05);
+        }
+        
+        .villa h4 {
+            margin: 15px 0;
+            font-size: 20px;
+            color: #554C42;
         }
 
-        .btn {  
-            display: inline-block;  
-            padding: 10px 15px;  
-            background-color: #8d7b4f;  
-            color: white;  
-            text-decoration: none;  
-            border-radius: 5px;  
-            margin-top: 10px;  
-            transition: transform 0.3s ease; /* Tambahkan transisi */  
-        }  
-
-        .btn:hover {  
-            transform: translateY(-5px); /* Efek mengambang saat hover */  
-            background-color: #7a6a3a; /* Opsional: Ganti warna latar belakang saat hover */  
+        .process-section {
+            padding: 80px 0;
+            background-color: #ffffff;
         }
 
-        .proses {  
-            padding: 30px;  
-            background-color: #ffffff;  
-            text-align: center;  
-        }  
-
-        .proses h3 {  
-            margin-bottom: 20px;  
-        }  
-
-        footer {  
-            text-align: center;  
-            padding: 20px;  
-            background-color: #8d7b4f;  
-            color: white;  
-            position: relative;  
-            bottom: 0;   
+        .process {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 50px;
         }
 
-        .container {  
-            max-width: 1200px;  
-            margin: auto; 
-            padding-bottom: 30px; 
-        }  
+        .step {
+            flex: 1;
+            min-width: 300px;
+            background-color: #f9f9f9;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
 
-        h1 {  
-            text-align: center;  
-            color: #4a4a4a;  
-        }  
+        .step:hover {
+            transform: translateY(-10px);
+        }
 
-        .process {  
-            display: flex;  
-            justify-content: space-between;  
-            flex-wrap: wrap;  
-            margin-top: 20px;  
-        }  
+        .step h2 {
+            color: #776B5D;
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
 
-        .step {  
-            background-color: #fff;  
-            border: 1px solid #e0e0e0;  
-            border-radius: 8px;  
-            padding: 20px;  
-            margin: 10px;  
-            flex: 1;  
-            min-width: 250px; /* Membatasi lebar minimum kolom */  
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  
-        }  
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: #B0A695;
+            color: white;
+            border-radius: 50%;
+            margin-right: 15px;
+            font-weight: bold;
+        }
 
-        .step h2 {  
-            color: #4a4a4a;  
-            font-size: 1.2em;  
-        }  
-
-        .step p {  
-            color: #606060;  
-            line-height: 1.5;  
+        @media (max-width: 768px) {
+            .header {
+                padding: 60px 0 40px;
+            }
+            
+            .text-section h1 {
+                font-size: 36px;
+            }
+            
+            .text-section h2 {
+                font-size: 24px;
+            }
+            
+            .villas {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .villa {
+                max-width: 100%;
+            }
         }
     </style>
 </head>  
 <body>  
-<nav class="navbar">  
-        <div class="logo">  
-            <img src="logo/kelompok.jpg" alt="Logo">  
-        </div>  
-        <button class="menu-toggle" aria-label="Toggle menu">☰</button>  
-        <ul class="menu">  
-            <li><a href="home.php">Beranda</a></li>  
-            <li><a href="villa_kami.php">Villa Kami</a></li>  
-            <li><a href="calender.php">Cek Tanggal</a></li>  
-            <li><a href="tentang_kami.php">Tentang Kami</a></li>  
-            <li><a href="logout.php">Logout</a></li>  
-        </ul>  
-    </nav>
+<?php include 'navbar.php'; ?>
+
 <header class="header">  
-    <div class="header-content text-color">  
-        <div class="text-section" data-aos="fade-up">  
-            <h1>SELAMAT DATANG!</h1>  
-            <h2>VILLA SITU LENGKONG</h2>  
-            <p>Menemukan informasi villa di Panjalu untuk staycation lebih mudah dengan website kami.</p>  
-        </div>  
-        <img src="kayu_hujung/IMG_46111.jpg" alt="Pemandangan Villa" class="header-image" data-aos="zoom-in">  
+    <div class="container">
+        <div class="header-content">  
+            <div class="text-section" data-aos="fade-right" data-aos-duration="1000">  
+                <h1>SELAMAT DATANG!</h1>  
+                <h2>VILLA SITU LENGKONG</h2>  
+                <p>Temukan pengalaman staycation sempurna di Panjalu dengan villa-villa pilihan kami. Pemandangan indah, fasilitas lengkap, dan kenyamanan tak terlupakan.</p>
+                <a href="villa_kami.php" class="btn">Lihat Villa Kami</a>
+            </div>  
+            <img src="kayu_hujung/IMG_46111.jpg" alt="Pemandangan Villa" class="header-image" data-aos="fade-left" data-aos-duration="1000">  
+        </div>
     </div>  
 </header>   
 
-<section>  
-    <div class="villa-details text-color" data-aos="fade-up">
-    <h3>YUK LIHAT DETAIL VILLA!</h3>  
-    <div class="villas text-color" data-aos="fade-up">  
-        <div class="villa">  
-            <img src="kayu_hujung/IMG_4589.jpg" alt="Villa Bata Dukuh">  
-            <h4>VILLA BATA DUKUH</h4>   
+<section class="villa-details">
+    <div class="container">
+        <h3 class="section-title" data-aos="fade-up">VILLA PILIHAN KAMI</h3>  
+        <div class="villas" data-aos="fade-up" data-aos-delay="200">  
+            <div class="villa" data-aos="zoom-in" data-aos-delay="300">  
+                <img src="kayu_hujung/IMG_4589.jpg" alt="Villa Bata Dukuh">  
+                <h4>VILLA BATA DUKUH</h4>   
+            </div>  
+            <div class="villa" data-aos="zoom-in" data-aos-delay="500">  
+                <img src="bata_dukuh/IMG_4697.jpg" alt="Villa Kayu Hujung">  
+                <h4>VILLA KAYU HUJUNG</h4>   
+            </div>  
         </div>  
-        <div class="villa">  
-            <img src="bata_dukuh/IMG_4697.jpg" alt="Villa Kayu Hujung">  
-            <h4>VILLA KAYU HUJUNG</h4>   
-        </div>  
-    </div>  
-    <a href="villa_kami.php" class="btn" data-aos="fade-up">LIHAT SELENGKAPNYA</a> 
-    </div>
+        <a href="villa_kami.php" class="btn" data-aos="fade-up" data-aos-delay="700">LIHAT SELENGKAPNYA</a>
+    </div> 
 </section>  
 
-<div class="container" data-aos="fade-up">  
-    <h1>PROSES PENYEWAAN VILLA</h1>  
-    <div class="process" >  
-        <div class="step" data-aos="fade-right">  
-            <h2>1. PEMILIHAN VILLA DAN TANGGAL</h2>  
-            <p>Tim kami akan membantu Anda menyesuaikan villa dan tanggal yang tersedia. Sesuaikan dengan tim kami mengenai kebutuhan dan tujuan Anda menginap di villa kami.</p>  
-        </div>  
-        <div class="step" data-aos="fade-zoom-in">  
-            <h2>2. PROSES DP</h2>  
-            <p>Saat Anda telah menemukan villa dengan tanggal yang pas, maka tahap selanjutnya adalah pembayaran DP minimal sebesar 50% dari harga sewa villa.</p>  
-        </div>  
-        <div class="step" data-aos="fade-left">  
-            <h2>3. PELUNASAN</h2>  
-            <p>Anda diharapkan untuk melunasi pembayaran sewa villa maksimal tiga hari sebelum tanggal menginap Anda. Agar pada saat Anda check-in, Anda tidak perlu memikirkan mengenai pembayaran lagi.</p>  
-        </div>  
+<section class="process-section">
+    <div class="container">
+        <h1 class="section-title" data-aos="fade-up">PROSES PENYEWAAN VILLA</h1>  
+        <div class="process">  
+            <div class="step" data-aos="fade-right" data-aos-delay="200">  
+                <h2><span class="step-number">1</span>PEMILIHAN VILLA DAN TANGGAL</h2>  
+                <p>Tim kami akan membantu Anda menyesuaikan villa dan tanggal yang tersedia. Sesuaikan dengan tim kami mengenai kebutuhan dan tujuan Anda menginap di villa kami.</p>  
+            </div>  
+            <div class="step" data-aos="fade-up" data-aos-delay="400">  
+                <h2><span class="step-number">2</span>PROSES DP</h2>  
+                <p>Saat Anda telah menemukan villa dengan tanggal yang pas, maka tahap selanjutnya adalah pembayaran DP minimal sebesar 50% dari harga sewa villa.</p>  
+            </div>  
+            <div class="step" data-aos="fade-left" data-aos-delay="600">  
+                <h2><span class="step-number">3</span>PELUNASAN</h2>  
+                <p>Anda diharapkan untuk melunasi pembayaran sewa villa maksimal tiga hari sebelum tanggal menginap Anda. Agar pada saat Anda check-in, Anda tidak perlu memikirkan mengenai pembayaran lagi.</p>  
+            </div>  
+        </div>
     </div>  
-</div>  
+</section>  
 
-<footer >  
-    <p>&copy; 2024. All Rights Reserved Villa Panjalu</p>  
+<footer>
+    <div class="container">
+        <p>&copy; 2024. All Rights Reserved Villa Situ Lengkong Panjalu</p>
+    </div>  
 </footer>  
-</body>
+
+<script src="js/navbar.js"></script>
 <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-  <script>
-    AOS.init();
-  </script>
+<script>
+    AOS.init({
+        duration: 800,
+        easing: 'ease',
+        once: true
+    });
+</script>
+</body>
 </html>
