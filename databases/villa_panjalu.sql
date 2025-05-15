@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 01 Des 2024 pada 13.21
+-- Waktu pembuatan: 11 Bulan Mei 2025 pada 17.33
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -41,31 +41,10 @@ CREATE TABLE `bookings` (
 --
 
 INSERT INTO `bookings` (`id`, `user_id`, `villa_id`, `booking_date`, `payment_status`, `payment_method`) VALUES
-(2, 5, 4, '2024-11-15', 'completed', 'Gopay'),
-(3, 5, 3, '2024-11-09', 'completed', 'Dana'),
-(4, 5, 3, '2024-12-01', 'pending', 'Dana'),
-(5, 5, 3, '2024-11-21', 'completed', 'OVO'),
-(6, 5, 3, '2024-11-27', 'pending', 'Dana'),
-(7, 5, 3, '2024-11-28', 'pending', 'Dana'),
-(8, 5, 4, '2025-01-25', 'pending', 'Dana'),
-(9, 5, 3, '2025-02-01', 'pending', 'Dana'),
-(10, 5, 3, '2024-11-30', 'pending', 'dana'),
-(11, 5, 3, '2024-11-25', 'pending', 'dana'),
-(12, 5, 3, '2024-11-24', 'completed', 'dana'),
-(13, 13, 3, '2024-11-06', 'completed', 'dana'),
-(14, 13, 3, '2025-01-07', 'pending', 'dana'),
-(15, 13, 3, '2024-11-04', 'pending', 'gopay'),
-(16, 13, 3, '2024-11-07', 'pending', 'dana'),
-(17, 5, 3, '2024-11-12', 'pending', 'dana'),
-(18, 5, 3, '2025-04-10', 'pending', 'dana'),
-(19, 5, 3, '2025-01-02', 'pending', 'dana'),
-(20, 5, 3, '2025-01-03', 'pending', 'dana'),
-(21, 5, 3, '2025-02-08', 'pending', 'dana'),
-(22, 5, 3, '2025-02-02', 'pending', 'dana'),
-(23, 5, 3, '2025-04-11', 'pending', 'dana'),
-(24, 5, 3, '2025-04-12', 'pending', 'dana'),
-(25, 5, 3, '2025-04-18', 'pending', 'dana'),
-(26, 5, 3, '2025-01-11', 'pending', 'dana');
+(1, 1, 1, '2025-04-12', 'completed', 'dana'),
+(2, 3, 1, '2025-05-14', 'completed', 'dana'),
+(3, 3, 1, '2025-05-21', 'pending', 'gopay'),
+(4, 3, 1, '2025-05-30', 'pending', 'ovo');
 
 -- --------------------------------------------------------
 
@@ -85,15 +64,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `role`) VALUES
-(3, 'maula_13', '$2y$10$yvFrM5LW6nS8Qg6ifKW06OwEjPtzT0uYhO7H8e41Yb38X8VE7cada', 'admin'),
-(5, 'khilqi', '$2y$10$AKjQA.LwcHW4wGnCxIj.G.qPrlh7xdTeMEbhapId.gSAhZbUkDUta', 'user'),
-(6, 'senor', '$2y$10$GhAd5ZWLbYhVfqjboyRZMO1w6Vkoz5xqHtMIJa2QPEUjYuMaGPDu2', 'user'),
-(7, 'admin', '$2y$10$4IHTp8JtXvkqqf2U9DYIN.O4ZMVj7vY7eQYm3sa/9e0nSVXaTtvuO', 'admin'),
-(10, 'leli', '$2y$10$kPybblarkZVwwoW0CResg.1rtVQ11QaJp3TGx.6corIkdIzIm83Ya', 'admin'),
-(11, 'sasa', '$2y$10$xPaK0rcUjuzwp82Ebmeif.SxO7NQxWLb/F.A7tbpK2DL.biOhojUG', 'user'),
-(12, 'desti', '$2y$10$vA3AohVpL/TuxjSLfKHqSOJ8DVszdh8ugiCYPa2ItlM.GDxz0NHGq', 'user'),
-(13, 'lely', '$2y$10$.hVAt4AvsSgyMUP/6lzeue/8knU/FLIjDQpdI.dQvWp4Dgt..VyHC', 'user'),
-(16, 'laa', '$2y$10$RNsc3L17c4A/I8BtgTVDj.1/v7j28jO27yBUD3fWXU2M4Al.KljP.', 'user');
+(1, 'user', '$2y$10$N1nHSj1SrhvjBJ7rEl7pE.CzdoXSymvvuow217fX3fNWQbzE3Ll76', 'user'),
+(2, 'admin', '$2y$10$H4qDnOb4N/s0/jTcVqK0e.8dEsa.ifWxtyHgD/ONzG5J3zxgVOBLG', 'admin'),
+(3, 'khilqi', '$2y$10$ej7U65j/AKY2RtRp3Iofouk94EmBaJt7N8CpcYXe3Uf7xNIKoKMza', 'user'),
+(6, 'marsel', '$2y$10$X.G1zdh4.VmDDt8xTiMPbOcGXoQk1QIM53IY4fCUXXUShqf70ca7S', 'user');
 
 -- --------------------------------------------------------
 
@@ -113,8 +87,8 @@ CREATE TABLE `villas` (
 --
 
 INSERT INTO `villas` (`id`, `name`, `price`, `image`) VALUES
-(3, 'Villa Kayu Hujung', 2000000.00, 'villa1.jpg'),
-(4, 'Villa Bata Dukuh', 2000000.00, 'villa2.jpg');
+(1, 'Villa 1', 500000.00, 'villa1.jpg'),
+(2, 'Villa 2', 750000.00, 'villa2.jpg');
 
 --
 -- Indexes for dumped tables
@@ -149,19 +123,19 @@ ALTER TABLE `villas`
 -- AUTO_INCREMENT untuk tabel `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT untuk tabel `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT untuk tabel `villas`
 --
 ALTER TABLE `villas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)

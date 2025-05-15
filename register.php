@@ -13,16 +13,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($password !== $confirm_password) {
         $notification = "Konfirmasi password tidak sesuai dengan password yang pertama. Pastikan kedua password sama.";
     } else {
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-        $stmt = $conn->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $username, $hashed_password, $role);
-
-        if ($stmt->execute()) {
-            $notification = "Registrasi berhasil!";
+        // Memeriksa apakah username sudah ada dalam database
+        $check_stmt = $conn->prepare("SELECT username FROM users WHERE username = ?");
+        $check_stmt->bind_param("s", $username);
+        $check_stmt->execute();
+        $check_stmt->store_result();
+        
+        if ($check_stmt->num_rows > 0) {
+            $notification = "Username sudah digunakan. Silakan pilih username lain.";
         } else {
-            $notification = "Gagal registrasi!";
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+            $stmt = $conn->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $username, $hashed_password, $role);
+
+            if ($stmt->execute()) {
+                $notification = "Registrasi berhasil!";
+            } else {
+                $notification = "Gagal registrasi!";
+            }
         }
+        $check_stmt->close();
     }
 }
 ?>
