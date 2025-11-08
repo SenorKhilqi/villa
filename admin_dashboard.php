@@ -11,7 +11,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 function formatPaymentMethod($method) {
     $method = strtolower(trim($method));
     
-    if ($method === 'dana') {
+    if ($method === 'qris') {
+        return 'QRIS';
+    } elseif ($method === 'dana') {
         return 'Dana';
     } elseif ($method === 'gopay' || $method === 'go pay') {
         return 'Gopay';
@@ -23,7 +25,7 @@ function formatPaymentMethod($method) {
     }
 }
 
-// Update payment status
+// Update payment status and handle refunds
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_status'])) {
         $booking_id = intval($_POST['booking_id']);
@@ -36,15 +38,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->query("DELETE FROM bookings WHERE id = $booking_id");
         header("Location: admin_dashboard.php");
         exit();
+    } elseif (isset($_POST['approve_refund'])) {
+        $refund_id = intval($_POST['refund_id']);
+        $booking_id = intval($_POST['booking_id']);
+        $admin_id = $_SESSION['user_id'];
+        
+        // Update refund status
+        $conn->query("UPDATE refunds SET refund_status = 'approved', processed_by_admin_id = $admin_id, processed_at = NOW() WHERE id = $refund_id");
+        $conn->query("UPDATE bookings SET refund_status = 'approved', refund_processed_at = NOW() WHERE id = $booking_id");
+        
+        header("Location: admin_dashboard.php?tab=refunds");
+        exit();
+    } elseif (isset($_POST['reject_refund'])) {
+        $refund_id = intval($_POST['refund_id']);
+        $booking_id = intval($_POST['booking_id']);
+        $admin_id = $_SESSION['user_id'];
+        $admin_notes = $_POST['admin_notes'] ?? '';
+        
+        $stmt = $conn->prepare("UPDATE refunds SET refund_status = 'rejected', processed_by_admin_id = ?, admin_notes = ?, processed_at = NOW() WHERE id = ?");
+        $stmt->bind_param("isi", $admin_id, $admin_notes, $refund_id);
+        $stmt->execute();
+        
+        $conn->query("UPDATE bookings SET refund_status = 'rejected', refund_processed_at = NOW() WHERE id = $booking_id");
+        
+        header("Location: admin_dashboard.php?tab=refunds");
+        exit();
     }
 }
 
+// Get current tab
+$current_tab = $_GET['tab'] ?? 'bookings';
+
+// Query for bookings
 $result = $conn->query("
-    SELECT bookings.id AS booking_id, users.username, villas.name AS villa_name, villas.price, bookings.booking_date, bookings.payment_status, bookings.payment_method
+    SELECT bookings.id AS booking_id, users.username, villas.name AS villa_name, villas.price, bookings.booking_date, bookings.payment_status, bookings.payment_method, bookings.refund_status
     FROM bookings 
     JOIN users ON bookings.user_id = users.id 
     JOIN villas ON bookings.villa_id = villas.id 
     ORDER BY bookings.booking_date
+");
+
+// Query for refunds with payment details
+$refunds_result = $conn->query("
+    SELECT r.id AS refund_id, r.booking_id, r.refund_amount, r.refund_reason, r.refund_status, 
+           r.requested_at, r.processed_at, r.admin_notes,
+           r.refund_method, r.account_holder_name, r.account_number,
+           u.username, v.name AS villa_name, b.booking_date, b.payment_method
+    FROM refunds r
+    JOIN bookings b ON r.booking_id = b.id
+    JOIN users u ON r.requested_by_user_id = u.id
+    JOIN villas v ON b.villa_id = v.id
+    WHERE r.refund_status = 'pending'
+    ORDER BY r.requested_at DESC
 ");
 ?>
 
@@ -322,12 +367,50 @@ $result = $conn->query("
 
         .status-pending {
             background-color: rgba(255, 209, 102, 0.15);
-            color: var(--warning);
+            color: #e67e22;
+            border: 1px solid rgba(230, 126, 34, 0.3);
+        }
+        
+        .status-awaiting {
+            background-color: rgba(52, 152, 219, 0.15);
+            color: #3498db;
+            border: 1px solid rgba(52, 152, 219, 0.3);
         }
 
         .status-completed {
             background-color: rgba(107, 203, 119, 0.15);
             color: var(--success);
+            border: 1px solid rgba(107, 203, 119, 0.3);
+        }
+        
+        .status-expired {
+            background-color: rgba(149, 165, 166, 0.15);
+            color: #7f8c8d;
+            border: 1px solid rgba(127, 140, 141, 0.3);
+        }
+        
+        .status-cancelled {
+            background-color: rgba(255, 107, 107, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        
+        .status-requested {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .status-approved {
+            background-color: rgba(33, 150, 243, 0.15);
+            color: #2196f3;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+        }
+        
+        .status-rejected {
+            background-color: rgba(244, 67, 54, 0.15);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
         }
 
         /* Action buttons */
@@ -369,6 +452,65 @@ $result = $conn->query("
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Tab Navigation */
+        .tab-navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-light);
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tab-btn:hover {
+            color: var(--primary-dark);
+        }
+        
+        .tab-btn.active {
+            color: var(--primary-dark);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-btn .badge {
+            background-color: var(--danger);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        /* Refund payment details */
+        .refund-payment-details {
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid var(--primary);
+            min-width: 180px;
+        }
+        
+        .refund-payment-details i {
+            width: 16px;
+            text-align: center;
+            margin-right: 5px;
         }
 
         /* Footer */
@@ -456,6 +598,22 @@ $result = $conn->query("
     <main class="admin-content">
         <h1 class="dashboard-title">Dashboard</h1>
 
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn <?php echo $current_tab === 'bookings' ? 'active' : ''; ?>" onclick="window.location.href='admin_dashboard.php?tab=bookings'">
+                <i class="fas fa-calendar-check"></i> Bookings
+            </button>
+            <button class="tab-btn <?php echo $current_tab === 'refunds' ? 'active' : ''; ?>" onclick="window.location.href='admin_dashboard.php?tab=refunds'">
+                <i class="fas fa-undo"></i> Permintaan Pembatalan
+                <?php 
+                $pending_refunds = $conn->query("SELECT COUNT(*) as count FROM refunds WHERE refund_status = 'pending'")->fetch_assoc();
+                if ($pending_refunds['count'] > 0) {
+                    echo '<span class="badge">' . $pending_refunds['count'] . '</span>';
+                }
+                ?>
+            </button>
+        </div>
+
         <!-- Stats Cards -->
         <div class="stats-container">
             <div class="stat-card">
@@ -512,6 +670,7 @@ $result = $conn->query("
         </div>
 
         <!-- Bookings Table -->
+        <?php if ($current_tab === 'bookings'): ?>
         <div class="bookings-table-container">
             <div class="table-header">
                 <h2 class="table-title">Booking Management</h2>
@@ -532,7 +691,8 @@ $result = $conn->query("
                             <th>Date</th>
                             <th>Price</th>
                             <th>Payment Method</th>
-                            <th>Status</th>
+                            <th>Payment Status</th>
+                            <th>Refund Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -545,22 +705,73 @@ $result = $conn->query("
                             <td>Rp<?php echo number_format($row['price'], 0, ',', '.'); ?></td>
                             <td><?php echo htmlspecialchars(formatPaymentMethod($row['payment_method'])); ?></td>
                             <td>
-                                <span class="status-badge <?php echo strtolower($row['payment_status']) === 'pending' ? 'status-pending' : 'status-completed'; ?>">
-                                    <?php echo htmlspecialchars($row['payment_status']); ?>
+                                <?php 
+                                $status = strtolower($row['payment_status']);
+                                $status_class = '';
+                                $status_label = htmlspecialchars($row['payment_status']);
+                                
+                                switch($status) {
+                                    case 'pending':
+                                        $status_class = 'status-pending';
+                                        $status_label = 'Pending';
+                                        break;
+                                    case 'awaiting_payment':
+                                        $status_class = 'status-awaiting';
+                                        $status_label = 'Awaiting Payment';
+                                        break;
+                                    case 'completed':
+                                        $status_class = 'status-completed';
+                                        $status_label = 'Completed';
+                                        break;
+                                    case 'expired':
+                                        $status_class = 'status-expired';
+                                        $status_label = 'Expired';
+                                        break;
+                                    case 'cancelled':
+                                        $status_class = 'status-cancelled';
+                                        $status_label = 'Cancelled';
+                                        break;
+                                    default:
+                                        $status_class = 'status-pending';
+                                }
+                                ?>
+                                <span class="status-badge <?php echo $status_class; ?>">
+                                    <?php echo $status_label; ?>
                                 </span>
                             </td>
                             <td>
+                                <?php 
+                                $refund_status = $row['refund_status'] ?? 'none';
+                                if ($refund_status !== 'none') {
+                                    $refund_class = 'status-' . strtolower($refund_status);
+                                    $refund_labels = [
+                                        'requested' => 'Refund Requested',
+                                        'approved' => 'Refund Approved',
+                                        'rejected' => 'Refund Rejected',
+                                        'completed' => 'Refunded'
+                                    ];
+                                    echo '<span class="status-badge ' . $refund_class . '">' . ($refund_labels[$refund_status] ?? $refund_status) . '</span>';
+                                } else {
+                                    echo '<span style="color: #999;">-</span>';
+                                }
+                                ?>
+                            </td>
+                            <td>
                                 <div class="action-buttons">
-                                    <?php if (strtolower($row['payment_status']) === 'pending') { ?>
+                                    <?php if ($status === 'pending' || $status === 'awaiting_payment') { ?>
                                         <form method="POST" action="" class="inline">
                                             <input type="hidden" name="booking_id" value="<?php echo $row['booking_id']; ?>">
                                             <button type="submit" name="update_status" class="btn btn-primary">
                                                 <i class="fas fa-check"></i> Approve
                                             </button>
                                         </form>
+                                    <?php } elseif ($status === 'completed') { ?>
+                                        <button type="button" class="btn btn-secondary" disabled>
+                                            <i class="fas fa-check-circle"></i> Paid
+                                        </button>
                                     <?php } else { ?>
                                         <button type="button" class="btn btn-secondary" disabled>
-                                            <i class="fas fa-check-circle"></i> Completed
+                                            <i class="fas fa-times-circle"></i> <?php echo ucfirst($status); ?>
                                         </button>
                                     <?php } ?>
                                     <form method="POST" action="" class="inline">
@@ -577,15 +788,243 @@ $result = $conn->query("
                 </table>
             </div>
         </div>
+        <?php endif; ?>
+
+        <!-- Refunds Table -->
+        <?php if ($current_tab === 'refunds'): ?>
+        <div class="bookings-table-container">
+            <div class="table-header">
+                <h2 class="table-title">Pending Permintaan Pembatalan</h2>
+            </div>
+            
+            <div class="table-wrapper">
+                <?php if ($refunds_result->num_rows > 0): ?>
+                <table id="refundsTable">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Villa</th>
+                            <th>Booking Date</th>
+                            <th>Refund Amount</th>
+                            <th>Detail Pembatalans</th>
+                            <th>Reason</th>
+                            <th>Requested</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($refund = $refunds_result->fetch_assoc()): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($refund['username']); ?></td>
+                            <td><?php echo htmlspecialchars($refund['villa_name']); ?></td>
+                            <td><?php echo date('d M Y', strtotime($refund['booking_date'])); ?></td>
+                            <td><strong>Rp<?php echo number_format($refund['refund_amount'], 0, ',', '.'); ?></strong></td>
+                            <td>
+                                <div class="refund-payment-details">
+                                    <?php 
+                                    $method_labels = [
+                                        'dana' => 'Dana',
+                                        'ovo' => 'OVO',
+                                        'gopay' => 'GoPay',
+                                        'bank_bca' => 'Bank BCA',
+                                        'bank_mandiri' => 'Bank Mandiri',
+                                        'bank_bri' => 'Bank BRI',
+                                        'bank_bni' => 'Bank BNI'
+                                    ];
+                                    $method = $refund['refund_method'] ?? '-';
+                                    $method_label = $method_labels[$method] ?? ucfirst($method);
+                                    ?>
+                                    <div style="margin-bottom: 5px;">
+                                        <i class="fas fa-wallet" style="color: var(--primary);"></i> 
+                                        <strong><?php echo htmlspecialchars($method_label); ?></strong>
+                                    </div>
+                                    <div style="font-size: 13px; color: #666;">
+                                        <i class="fas fa-user"></i> <?php echo htmlspecialchars($refund['account_holder_name'] ?? '-'); ?>
+                                    </div>
+                                    <div style="font-size: 13px; color: #666;">
+                                        <i class="fas fa-credit-card"></i> <?php echo htmlspecialchars($refund['account_number'] ?? '-'); ?>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="max-width: 200px;">
+                                <div class="reason-text" title="<?php echo htmlspecialchars($refund['refund_reason']); ?>">
+                                    <?php echo htmlspecialchars(substr($refund['refund_reason'], 0, 80)) . (strlen($refund['refund_reason']) > 80 ? '...' : ''); ?>
+                                </div>
+                            </td>
+                            <td><?php echo date('d M Y H:i', strtotime($refund['requested_at'])); ?></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <form method="POST" action="" class="inline" onsubmit="return confirm('Setujui Pembatalan ini?');">
+                                        <input type="hidden" name="refund_id" value="<?php echo $refund['refund_id']; ?>">
+                                        <input type="hidden" name="booking_id" value="<?php echo $refund['booking_id']; ?>">
+                                        <button type="submit" name="approve_refund" class="btn btn-primary">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-secondary" onclick="showRefundDetail(<?php echo $refund['refund_id']; ?>)" style="background-color: #6c757d; margin-right: 5px;">
+                                        <i class="fas fa-eye"></i> Detail
+                                    </button>
+                                    <button type="button" class="btn btn-danger" onclick="showRejectModal(<?php echo $refund['refund_id']; ?>, <?php echo $refund['booking_id']; ?>)">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+                <?php else: ?>
+                <div style="text-align: center; padding: 40px; color: #6c757d;">
+                    <i class="fas fa-inbox" style="font-size: 48px; opacity: 0.3; margin-bottom: 15px;"></i>
+                    <p>Tidak ada refund request yang pending</p>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
     </main>
 
     <footer class="admin-footer">
         &copy; 2024 Villa Situ Lengkong. All rights reserved.
     </footer>
 
+    <!-- Detail Pembatalan Modal -->
+    <div id="detailModal" class="modal" style="display: none;">
+        <div class="modal-content" style="background: white; max-width: 600px; margin: 50px auto; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: var(--accent);">Detail Refund Request</h3>
+                <button onclick="closeDetailModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
+            </div>
+            <div id="detailContent"></div>
+        </div>
+    </div>
+
+    <!-- Tolak Pembatalan Modal -->
+    <div id="rejectModal" class="modal" style="display: none;">
+        <div class="modal-content" style="background: white; max-width: 500px; margin: 100px auto; padding: 30px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+            <h3 style="margin-top: 0; color: var(--accent);">Tolak Permintaan Pembatalan</h3>
+            <form method="POST" action="">
+                <input type="hidden" name="refund_id" id="reject_refund_id">
+                <input type="hidden" name="booking_id" id="reject_booking_id">
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Alasan Penolakan (opsional):</label>
+                    <textarea name="admin_notes" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; min-height: 100px; font-family: 'Poppins', sans-serif;" placeholder="Berikan Alasan Penolakan refund..."></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeRejectModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" name="reject_refund" class="btn btn-danger">Tolak Pembatalan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
+        // Detail Pembatalan data
+        const refundData = <?php 
+            $refunds_result->data_seek(0); // Reset pointer
+            $refunds_array = [];
+            while ($r = $refunds_result->fetch_assoc()) {
+                $refunds_array[$r['refund_id']] = $r;
+            }
+            echo json_encode($refunds_array);
+        ?>;
+        
+        // Show Detail Pembatalan modal
+        function showRefundDetail(refundId) {
+            const refund = refundData[refundId];
+            if (!refund) return;
+            
+            const methodLabels = {
+                'dana': 'Dana',
+                'ovo': 'OVO', 
+                'gopay': 'GoPay',
+                'bank_bca': 'Bank BCA',
+                'bank_mandiri': 'Bank Mandiri',
+                'bank_bri': 'Bank BRI',
+                'bank_bni': 'Bank BNI'
+            };
+            
+            const content = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 15px 0; color: var(--primary);">Informasi Booking</h4>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr><td style="padding: 8px 0; color: #666;">User:</td><td style="font-weight: 500;">${refund.username}</td></tr>
+                        <tr><td style="padding: 8px 0; color: #666;">Villa:</td><td style="font-weight: 500;">${refund.villa_name}</td></tr>
+                        <tr><td style="padding: 8px 0; color: #666;">Tanggal Booking:</td><td style="font-weight: 500;">${new Date(refund.booking_date).toLocaleDateString('id-ID')}</td></tr>
+                        <tr><td style="padding: 8px 0; color: #666;">Requested:</td><td style="font-weight: 500;">${new Date(refund.requested_at).toLocaleDateString('id-ID')} ${new Date(refund.requested_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'})}</td></tr>
+                    </table>
+                </div>
+                
+                <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                    <h4 style="margin: 0 0 10px 0; color: #856404;">
+                        <i class="fas fa-money-bill-wave"></i> Jumlah Pengembalian
+                    </h4>
+                    <div style="font-size: 24px; font-weight: 600; color: #856404;">
+                        Rp${new Intl.NumberFormat('id-ID').format(refund.refund_amount)}
+                    </div>
+                </div>
+                
+                <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+                    <h4 style="margin: 0 0 15px 0; color: #155724;">
+                        <i class="fas fa-wallet"></i> Detail Pengembalian Dana
+                    </h4>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr><td style="padding: 8px 0; color: #155724;">Metode:</td><td style="font-weight: 500; color: #155724;"><strong>${methodLabels[refund.refund_method] || refund.refund_method}</strong></td></tr>
+                        <tr><td style="padding: 8px 0; color: #155724;">Nama Pemegang:</td><td style="font-weight: 500; color: #155724;">${refund.account_holder_name || '-'}</td></tr>
+                        <tr><td style="padding: 8px 0; color: #155724;">Nomor Akun:</td><td style="font-weight: 500; color: #155724; font-family: monospace;">${refund.account_number || '-'}</td></tr>
+                    </table>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 10px 0; color: var(--accent);">
+                        <i class="fas fa-comment-alt"></i> Alasan Pembatalan
+                    </h4>
+                    <p style="margin: 0; line-height: 1.6; color: #495057;">${refund.refund_reason}</p>
+                </div>
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button onclick="closeDetailModal()" class="btn btn-secondary">Tutup</button>
+                    <button onclick="closeDetailModal(); document.querySelector('form[action=\\'\\'] input[name=\\'refund_id\\'][value=\\'${refundId}\\']').closest('form').querySelector('button[name=\\'approve_refund\\']').click();" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Setujui Pembatalan
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('detailContent').innerHTML = content;
+            document.getElementById('detailModal').style.display = 'block';
+        }
+        
+        function closeDetailModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+        
+        // Tolak Pembatalan modal functions
+        function showRejectModal(refundId, bookingId) {
+            document.getElementById('reject_refund_id').value = refundId;
+            document.getElementById('reject_booking_id').value = bookingId;
+            document.getElementById('rejectModal').style.display = 'block';
+        }
+        
+        function closeRejectModal() {
+            document.getElementById('rejectModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const rejectModal = document.getElementById('rejectModal');
+            const detailModal = document.getElementById('detailModal');
+            if (event.target == rejectModal) {
+                closeRejectModal();
+            }
+            if (event.target == detailModal) {
+                closeDetailModal();
+            }
+        }
+        
         // Search functionality
-        document.getElementById('searchInput').addEventListener('keyup', function() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
             var input, filter, table, tr, td, i, txtValue;
             input = document.getElementById('searchInput');
             filter = input.value.toUpperCase();
@@ -606,7 +1045,9 @@ $result = $conn->query("
                 }
                 tr[i].style.display = visible ? '' : 'none';
             }
-        });
+            });
+        }
     </script>
 </body>
 </html>
+

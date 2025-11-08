@@ -1,0 +1,35 @@
+# Environment files
+.env
+
+# PHP
+*.log
+*.cache
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*~
+*_backup.php
+
+# Uploaded files (keep structure, ignore content)
+uploads/*
+!uploads/.gitkeep
+
+# Composer
+vendor/
+composer.lock
+
+# Legacy files (kept in repo for reference)
+# legacy/ folder is tracked intentionally
+
+# Cleanup plans (temporary)
+CLEANUP_PLAN.md
